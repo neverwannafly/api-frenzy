@@ -1,0 +1,56 @@
+version: "3.9"
+
+services:
+  web:
+    image: af.web:v1
+    environment:
+      CHOKIDAR_USEPOLLING: "true"
+    volumes:
+      - ./services/web:/app
+    ports:
+      - "3000:3000"
+    depends_on:
+      - "api"
+
+  api:
+    image: af.api:v1
+    environment:
+      CHOKIDAR_USEPOLLING: "true"
+      RAILS_ENV: development
+    ports:
+      - "8080:8080"
+    env_file: ./services/api/.env
+    depends_on:
+      - "database"
+      - "redis"
+    volumes:
+      - ./services/api:/app
+
+  database:
+    image: postgres:12.1
+    volumes:
+      - psql_data:/var/lib/postgresql/data
+      - ./services/db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7.0.4-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/var/lib/redis/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+
+  nginx:
+    image: af.nginx:v1
+    depends_on:
+      - api
+      - web
+    ports:
+      - '8000:8000'
+
+volumes:
+  psql_data:
+  redis_data:
