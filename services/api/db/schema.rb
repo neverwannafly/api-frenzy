@@ -10,9 +10,66 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 0) do
+ActiveRecord::Schema.define(version: 2024_08_08_155246) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
+  create_table "function_invocations", force: :cascade do |t|
+    t.bigint "function_id"
+    t.integer "status"
+    t.json "meta"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["function_id"], name: "index_function_invocations_on_function_id"
+  end
+
+  create_table "functions", force: :cascade do |t|
+    t.bigint "runtime_id"
+    t.bigint "user_id"
+    t.bigint "parent_function_id"
+    t.string "name"
+    t.string "description"
+    t.json "limits"
+    t.json "env_vars"
+    t.text "code"
+    t.integer "visibility"
+    t.integer "status"
+    t.integer "version"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["parent_function_id"], name: "index_functions_on_parent_function_id"
+    t.index ["runtime_id"], name: "index_functions_on_runtime_id"
+    t.index ["user_id"], name: "index_functions_on_user_id"
+  end
+
+  create_table "runtimes", force: :cascade do |t|
+    t.string "name"
+    t.string "slug"
+    t.string "description"
+    t.string "placeholder"
+    t.string "docker_image"
+    t.integer "runtime_type"
+    t.bigint "parent_runtime_id"
+    t.bigint "creator_id"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["creator_id"], name: "index_runtimes_on_creator_id"
+    t.index ["parent_runtime_id"], name: "index_runtimes_on_parent_runtime_id"
+  end
+
+  create_table "users", force: :cascade do |t|
+    t.string "email"
+    t.string "username"
+    t.string "password_digest"
+    t.string "name"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["email"], name: "index_users_on_email", unique: true
+    t.index ["username"], name: "index_users_on_username", unique: true
+  end
+
+  add_foreign_key "functions", "functions", column: "parent_function_id"
+  add_foreign_key "runtimes", "runtimes", column: "parent_runtime_id"
+  add_foreign_key "runtimes", "users", column: "creator_id"
 end

@@ -1,27 +1,18 @@
 import { useCallback, useState } from 'react';
-import { batch, useDispatch } from 'react-redux';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
 
 import apiRequest from '@app/lib/api';
-import { extractError } from '@app/constants/auth';
 import { setToast } from '@app/store/toast';
-import { setUser } from '@app/store/user';
 
 function useForm({
   baseUrl,
   formFields = {},
   formValidators = {},
+  handleSuccess = () => {},
 }) {
   const [formState, setFormState] = useState(formFields);
   const [formErrors, setFormErrors] = useState({});
   const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  const handleRedirect = useCallback(() => {
-    const { from } = location.state || { from: { pathname: '/' } };
-    navigate(from);
-  }, [navigate, location]);
 
   const handleSubmit = useCallback(async (event) => {
     event.preventDefault();
@@ -46,27 +37,23 @@ function useForm({
 
     try {
       const response = await apiRequest('POST', baseUrl, formState);
-      // This means there were no validation errors but either username
-      // is not found or the password is wrong
+      console.log(response);
       if (Object.keys(response).includes('error')) {
         dispatch(setToast({
-          message: 'Invalid username or password',
+          message: response.error || 'Something went wrong! Please try again later!',
           type: 'error',
         }));
         return;
       }
-      batch(() => {
-        dispatch(setUser(response));
-        dispatch(setToast({
-          message: `Welcome ${response.username}!`,
-          type: 'success',
-        }));
-      });
-      handleRedirect();
+      handleSuccess(response);
     } catch (err) {
+      console.log(err);
       if (err.isFromServer) {
-        const { error } = err.responseJson;
-        setFormErrors(extractError(error));
+        const { error } = err.responseJson || {};
+        dispatch(setToast({
+          message: error || 'Something went wrong! Please try later',
+          type: 'error',
+        }));
       } else {
         dispatch(setToast({
           message: 'Something went wrong! Please try later',
@@ -74,7 +61,10 @@ function useForm({
         }));
       }
     }
-  }, [dispatch, formState, formErrors, setFormErrors, setFormState, handleRedirect]);
+  }, [
+    dispatch, formState, handleSuccess,
+    baseUrl, formFields, formValidators,
+  ]);
 
   const handleFieldUpdate = useCallback((key) => (event) => {
     setFormState({ ...formState, [key]: event.target.value });

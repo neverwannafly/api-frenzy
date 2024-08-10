@@ -7,19 +7,15 @@ import { unsetToast } from '@app/store/toast';
 
 function ToastHandler() {
   const dispatch = useDispatch();
-  const { message, type } = useSelector((state) => state.toast);
+  const { message, type, open } = useSelector((state) => state.toast);
 
   const handleClose = useCallback(() => {
     dispatch(unsetToast());
   }, [dispatch]);
 
-  if (!message || message.length === 0) {
-    return null;
-  }
-
   return (
     <Snackbar
-      open={Boolean(message)}
+      open={open}
       autoHideDuration={6000}
       onClose={handleClose}
     >

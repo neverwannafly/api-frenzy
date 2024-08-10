@@ -14,8 +14,8 @@ class BaseService
     # Report this error
   end
 
-  def self.execute(*args, &block)
-    new(*args, &block).execute
+  def self.execute(**args, &block)
+    new(**args, &block).execute
   end
 
   def initialize_response

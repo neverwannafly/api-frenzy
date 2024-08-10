@@ -1,3 +1,5 @@
+import { getAuthToken, getTokenKey, setAuthToken } from './auth';
+
 function searchParams(params) {
   const paramsList = [];
   Object.keys(params).forEach((k) => {
@@ -15,6 +17,9 @@ async function parseJsonResponse(response) {
   }
 
   if (response.ok) {
+    const token = response.headers.get(getTokenKey());
+    // Set auth token if its present from backend
+    if (token) { setAuthToken(token); }
     return json;
   }
 
@@ -33,9 +38,9 @@ export default async function apiRequest(method, path, body = null, options = {}
     'X-Requested-With': 'XMLHttpRequest',
   };
 
-  const csrfMeta = document.querySelector('meta[name="csrf-token"]');
-  if (csrfMeta) {
-    defaultHeaders['X-CSRF-Token'] = csrfMeta.content;
+  const token = getAuthToken();
+  if (token) {
+    defaultHeaders['X-Session-Token'] = token;
   }
 
   const defaultOptions = { method };

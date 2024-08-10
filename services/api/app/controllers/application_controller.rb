@@ -7,7 +7,7 @@ class ApplicationController < ActionController::API
   private
 
   def set_user!
-    token = session[:authorization]
+    token = request.headers['X-Session-Token']
     return unless token.present?
 
     token = ::JwtAuth.validate_token(token)
@@ -16,17 +16,17 @@ class ApplicationController < ActionController::API
     @current_user ||= User.find_by(id: token[:id])
   end
 
-  def validate_user!
+  def authenticate_user!
     head :forbidden and return if current_user.blank?
   end
 
-  def set_user_cookie!(user)
+  def set_session_header!(user)
     token = ::JwtAuth.issue_token(user)
-    session[:authorization] = token
+    response.headers['X-Session-Token'] = token
   end
 
   def invalidate_user_cookie!
-    session[:authorization] = nil
+    response.headers['X-Session-Token'] = nil
   end
 
   def json_response(object, status = :ok)

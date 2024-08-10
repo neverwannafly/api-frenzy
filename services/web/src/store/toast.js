@@ -3,7 +3,8 @@ const UNSET_TOAST = 'toast/UNSET_TOAST';
 
 const initialState = {
   message: '',
-  type: 'success',
+  type: '',
+  open: false,
 };
 
 export const setToast = (payload) => (dispatch) => {
@@ -17,7 +18,7 @@ export const unsetToast = () => (dispatch) => {
 export default function (state = initialState, { type, payload }) {
   switch (type) {
     case SET_TOAST:
-      return { ...payload };
+      return { ...payload, open: true };
     case UNSET_TOAST:
       return { ...initialState };
     default:

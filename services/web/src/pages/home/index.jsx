@@ -1,8 +1,7 @@
 import React from 'react';
+import { useDispatch } from 'react-redux';
 
 import {
-  AppBar,
-  Toolbar,
   Typography,
   Button,
   Container,
@@ -14,8 +13,6 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
-  IconButton,
-  Divider,
   Box,
 } from '@mui/material';
 import {
@@ -24,28 +21,19 @@ import {
   Storage as StorageIcon,
   Timeline as TimelineIcon,
   CheckCircleOutline as CheckCircleOutlineIcon,
-  GitHub as GitHubIcon,
-  Twitter as TwitterIcon,
-  LinkedIn as LinkedInIcon,
 } from '@mui/icons-material';
 
-import AuthSidePanel from '@app/components/AuthDrawer';
+import { setForm } from '@app/store/forms';
+import AuthForm from '@app/components/auth';
 
 function LandingPage() {
+  const dispatch = useDispatch();
+  const showAuthForm = () => {
+    dispatch(setForm({ form: 'auth' }));
+  };
+
   return (
     <Box>
-      <AppBar position="static">
-        <Toolbar>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            API Frenzy
-          </Typography>
-          <Button color="inherit">Features</Button>
-          <Button color="inherit">Pricing</Button>
-          <Button color="inherit">Documentation</Button>
-          <Button color="inherit">Contact</Button>
-        </Toolbar>
-      </AppBar>
-
       <Container maxWidth="lg">
         {/* Hero Section */}
         <Box sx={{ my: 4, textAlign: 'center' }}>
@@ -55,7 +43,7 @@ function LandingPage() {
           <Typography variant="h5" component="h2" gutterBottom>
             Empower Your Development with Simplified API Management
           </Typography>
-          <Button variant="contained" size="large" sx={{ mt: 2 }}>
+          <Button variant="contained" size="large" sx={{ mt: 2 }} onClick={showAuthForm}>
             Get Started
           </Button>
         </Box>
@@ -253,47 +241,12 @@ function LandingPage() {
           <Typography variant="h4" component="h3" gutterBottom>
             Ready to Revolutionize Your API Development?
           </Typography>
-          <Button variant="contained" size="large" sx={{ mt: 2 }}>
+          <Button variant="contained" size="large" sx={{ mt: 2 }} onClick={showAuthForm}>
             Sign Up Now
           </Button>
         </Box>
       </Container>
-
-      {/* Footer */}
-      <Box bgcolor="primary.dark" sx={{ color: 'white', py: 4, mt: 8 }}>
-        <Container maxWidth="lg">
-          <Grid container spacing={4}>
-            <Grid item xs={12} md={4}>
-              <Typography variant="h6" gutterBottom>API Frenzy</Typography>
-              <Typography variant="body2">Empowering developers with simple, powerful API management solutions.</Typography>
-            </Grid>
-            <Grid item xs={12} md={4}>
-              <Typography variant="h6" gutterBottom>Quick Links</Typography>
-              <Typography variant="body2" component="div">
-                <Box component="span" sx={{ display: 'block', mb: 1 }}>Documentation</Box>
-                <Box component="span" sx={{ display: 'block', mb: 1 }}>Pricing</Box>
-                <Box component="span" sx={{ display: 'block', mb: 1 }}>Blog</Box>
-                <Box component="span" sx={{ display: 'block' }}>Contact Us</Box>
-              </Typography>
-            </Grid>
-            <Grid item xs={12} md={4}>
-              <Typography variant="h6" gutterBottom>Connect With Us</Typography>
-              <IconButton color="inherit"><GitHubIcon /></IconButton>
-              <IconButton color="inherit"><TwitterIcon /></IconButton>
-              <IconButton color="inherit"><LinkedInIcon /></IconButton>
-            </Grid>
-          </Grid>
-          <Divider sx={{ my: 3, bgcolor: 'rgba(255,255,255,0.2)' }} />
-          <Typography variant="body2" align="center">
-            ©
-            {' '}
-            {new Date().getFullYear()}
-            {' '}
-            API Frenzy. All rights reserved.
-          </Typography>
-        </Container>
-      </Box>
-      <AuthSidePanel open />
+      <AuthForm />
     </Box>
   );
 }

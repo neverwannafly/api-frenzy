@@ -17,8 +17,9 @@ function UserMenu() {
   const dispatch = useDispatch();
   const {
     isLoggedin,
-    username,
+    data,
   } = useSelector((state) => state.user);
+  const username = data?.attributes?.username;
 
   const [anchorEl, setAnchorEl] = useState(null);
 
@@ -39,7 +40,9 @@ function UserMenu() {
     <Box sx={{ flexGrow: 0, marginLeft: '2rem' }}>
       <Tooltip title="Open settings">
         <IconButton onClick={handleMenuOpen} sx={{ p: 0 }}>
-          <Avatar>{username[0]}</Avatar>
+          <Avatar>
+            {username[0].toUpperCase()}
+          </Avatar>
         </IconButton>
       </Tooltip>
       <Menu

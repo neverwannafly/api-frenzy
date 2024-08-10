@@ -50,6 +50,19 @@ services:
       - web
     ports:
       - '8000:8000'
+  
+  functions:
+    image: af.functions:v1
+    depends_on:
+      - web
+      - redis
+      - database
+    ports:
+      - "6969:6969"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./services/functions:/app
+    env_file: ./services/functions/.env
 
 volumes:
   psql_data:

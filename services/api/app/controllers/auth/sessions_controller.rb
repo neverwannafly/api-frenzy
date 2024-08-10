@@ -1,14 +1,11 @@
 class Auth::SessionsController < ::ApplicationController
-  before_action :validate_user!, only: %i[destroy]
+  before_action :authenticate_user!, only: %i[destroy]
   before_action :verify_user, only: %i[create]
 
-  # For security reasons, not telling the end user explicitly whether the email exists or not
-  INVALID_LOGIN_CREDENTIALS_ERROR = "Email Password combination is incorrect"
-
-  include ::Exceptions
+  include ::Auth::Exceptions
 
   def create
-    set_user_cookie!(@user)
+    set_session_header!(@user)
 
     json_response(::UserSerializer.new(@user))
   end
@@ -22,10 +19,12 @@ class Auth::SessionsController < ::ApplicationController
   private
 
   def verify_user
+    raise UserAlreadyLoggedInError, :bad_request if @current_user.present?
+
     @user = User.find_by_username(params[:username])
 
     if @user.blank? || !@user.authenticate(params[:password])
-      raise InvalidLoginCredentialsError, :not_found
+      raise InvalidLoginCredentialsError, :unauthorized
     end
   end
 end

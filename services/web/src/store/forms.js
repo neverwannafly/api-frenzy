@@ -2,8 +2,7 @@ const SET_FORM = 'forms/SET_FORM';
 const UNSET_FORM = 'forms/UNSET_FORM';
 
 const initialState = {
-  signupForm: false,
-  signinForm: false,
+  auth: false,
 };
 
 export const setForm = (payload) => (dispatch) => {
@@ -21,6 +20,6 @@ export default function (state = initialState, { type, payload }) {
     case UNSET_FORM:
       return { ...state, [payload.form]: false };
     default:
-      return { ...initialState };
+      return { ...state };
   }
 }

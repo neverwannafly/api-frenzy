@@ -1,47 +1,63 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
-import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
-import MenuIcon from '@mui/icons-material/Menu';
+import { Button } from '@mui/material';
 
 import Menu from './Menu';
-import Search from './Search';
+
+const LOGGEDIN_TABS = [
+  { id: 1, label: 'Functions', url: '/dashboard/functions' },
+  { id: 2, label: 'Jobs', url: '/dashboard/jobs' },
+  { id: 3, label: 'Workspaces', url: '/dashboard/workspaces' },
+];
+
+const LOGGEDOUT_TABS = [
+  { id: 1, label: 'Pricing', url: '/pricing' },
+  { id: 2, label: 'Documentation', url: '/documentation' },
+];
 
 function Header() {
   const navigate = useNavigate();
+  const {
+    isLoggedin,
+  } = useSelector((state) => state.user);
+  const handleClick = (url) => () => {
+    navigate(url);
+  };
 
   return (
     <Box sx={{ zIndex: 101 }}>
       <AppBar position="sticky">
         <Toolbar>
-          <IconButton
-            size="large"
-            edge="start"
-            color="inherit"
-            aria-label="open drawer"
-            sx={{ mr: 2 }}
-          >
-            <MenuIcon />
-          </IconButton>
           <Typography
             variant="h6"
             noWrap
             component="div"
-            sx={{ flexGrow: 1, display: { xs: 'none', sm: 'block' } }}
+            sx={{ flexGrow: 1, display: { sm: 'block' } }}
           >
             <div
               className="pointer"
               role="presentation"
-              onClick={() => navigate('/')}
+              onClick={() => (isLoggedin ? navigate('/dashboard') : navigate('/'))}
             >
-              Chess on Rails
+              API Frenzy
             </div>
           </Typography>
-          <Search />
+          {isLoggedin && (
+            LOGGEDIN_TABS.map(({ id, label, url }) => (
+              <Button key={id} color="inherit" onClick={handleClick(url)}>{label}</Button>
+            ))
+          )}
+          {!isLoggedin && (
+            LOGGEDOUT_TABS.map(({ id, label, url }) => (
+              <Button key={id} color="inherit" onClick={handleClick(url)}>{label}</Button>
+            ))
+          )}
           <Menu />
         </Toolbar>
       </AppBar>
