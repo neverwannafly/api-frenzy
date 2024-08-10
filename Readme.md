@@ -1,3 +1,3 @@
 # Description
 
-Site live at - https://api-frenzy.com
+Site live at - https://apifrenzy.com
