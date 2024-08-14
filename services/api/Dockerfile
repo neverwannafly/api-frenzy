@@ -40,7 +40,4 @@ COPY . ./
 
 EXPOSE 8080
 
-RUN chmod +x ./entrypoints/rails-init.sh
-RUN chmod +x ./entrypoints/sidekiq-init.sh
-
-ENTRYPOINT ["entrypoints/rails-init.sh"]
+ENTRYPOINT ["/bin/sh", "entrypoints/init.sh"]

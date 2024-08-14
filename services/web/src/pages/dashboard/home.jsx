@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Typography, Container, Grid, Paper,
@@ -17,7 +17,6 @@ import {
   TimerTwoTone as InvocationsIcon,
   AttachMoneyTwoTone as BillingIcon,
 } from '@mui/icons-material';
-import apiRequest from '@app/lib/api';
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(3),
@@ -61,13 +60,6 @@ function StatItem({ icon, primary, secondary }) {
 }
 
 function Dashboard() {
-  useEffect(() => {
-    const makeApiRequest = async () => {
-      const response = await apiRequest('GET', '/api/dashboard');
-      console.log(response);
-    };
-    makeApiRequest();
-  }, []);
   const [currentTab, setCurrentTab] = useState(0);
 
   const actionCards = [
@@ -76,21 +68,21 @@ function Dashboard() {
       title: 'Functions',
       description: 'Create and manage your serverless functions',
       icon: <FunctionsIcon fontSize="large" color="primary" />,
-      action: '/dashboard/functions/new',
+      action: '/functions/new',
     },
     {
       id: 2,
       title: 'Jobs',
       description: 'Set up and monitor background tasks',
       icon: <JobsIcon fontSize="large" color="primary" />,
-      action: '/dashboard/jobs/new',
+      action: '/jobs/new',
     },
     {
       id: 3,
       title: 'Workspaces',
       description: 'Manage your development environments',
       icon: <WorkspaceIcon fontSize="large" color="primary" />,
-      action: '/dashboard/workspaces/new',
+      action: '/workspaces/new',
     },
   ];
 

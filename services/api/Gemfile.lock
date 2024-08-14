@@ -81,6 +81,8 @@ GEM
       railties (>= 5.0.0)
     ffi (1.17.0)
     ffi (1.17.0-arm64-darwin)
+    friendly_id (5.5.1)
+      activerecord (>= 4.0.0)
     glicko2 (0.2.3)
     globalid (1.2.1)
       activesupport (>= 6.1)
@@ -212,6 +214,7 @@ DEPENDENCIES
   bootsnap (>= 1.4.4)
   byebug
   factory_bot_rails
+  friendly_id (~> 5.5.0)
   glicko2
   hiredis
   jbuilder (~> 2.7)

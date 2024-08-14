@@ -11,9 +11,9 @@ import { Button } from '@mui/material';
 import Menu from './Menu';
 
 const LOGGEDIN_TABS = [
-  { id: 1, label: 'Functions', url: '/dashboard/functions' },
-  { id: 2, label: 'Jobs', url: '/dashboard/jobs' },
-  { id: 3, label: 'Workspaces', url: '/dashboard/workspaces' },
+  { id: 1, label: 'Functions', url: '/functions' },
+  { id: 2, label: 'Jobs', url: '/jobs' },
+  { id: 3, label: 'Workspaces', url: '/workspaces' },
 ];
 
 const LOGGEDOUT_TABS = [

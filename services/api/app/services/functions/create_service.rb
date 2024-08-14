@@ -1,10 +1,11 @@
 class Functions::CreateService < ::BaseService
-  MAX_MEMORY_LIMIT = 512.megabytes
-  MAX_CPU_LIMIT = 1
-  MAX_TIMEOUT = 5000
-  MAX_ENV_VARS = 5
+  # These values should come from a policy
+  MAX_FUNCTIONS_ALLOWED = 5
 
-  def initialize(user:, runtime:, creation_params: {})
+  FUNCTION_CREATION_LIMIT_REACHED_ERROR = "You cant create more functions"
+  include ::Exceptions
+
+  def initialize(user:, runtime:, creation_params:)
     @user = user
     @runtime = runtime
     @creation_params = creation_params
@@ -12,35 +13,39 @@ class Functions::CreateService < ::BaseService
 
   def execute
     super do
+      validate_arguments!
+
+      raise FunctionCreationLimitReachedError unless can_create_function?
+
       function = Function.new(@creation_params)
-
       function = set_defaults(function)
-      function = enforce_limits(function)
-      
-      function.save!
 
-      success(FunctionSerializer.new(function))
+      if function.save
+        success(FunctionSerializer.new(function))
+      else
+        error(function.errors.full_messages.join(','))
+      end
     end
   end
 
-  def enforce_limits(function)
-    function.limits['memory'] = [[function.limits['memory'].to_i.megabytes, MAX_MEMORY_LIMIT].min, 0].max
-    function.limits['cpu'] = [[function.limits['cpu'].to_f, MAX_CPU_LIMIT].min, 0].max
-    function.limits['timeout'] = [[function.limits['timeout'].to_i, MAX_TIMEOUT].min, 0].max
+  private
 
-    function.env_vars = function.env_vars[0..MAX_ENV_VARS-1]
+  def set_defaults(function)
+    function.user = @user
+    function.runtime = @runtime
+
+    function.version = 0
+    function.visibility = :public
+    function.status = :draft
 
     function
   end
 
-  def set_defaults(function)
-    function.runtime = @runtime
-    function.user = @user
+  def can_create_function?
+    @user.functions.count < MAX_FUNCTIONS_ALLOWED
+  end
 
-    function.version = 1
-    function.visibility = :public
-    function.status = :active
-
-    function
+  def validate_arguments!
+    raise InvalidArgumentsError unless @user.present? && @runtime.present?
   end
 end

@@ -18,7 +18,11 @@ ActiveRecord::Schema.define(version: 2024_08_08_155246) do
   create_table "function_invocations", force: :cascade do |t|
     t.bigint "function_id"
     t.integer "status"
-    t.json "meta"
+    t.integer "time"
+    t.integer "memory"
+    t.integer "cpu_system"
+    t.integer "cpu_user"
+    t.json "output"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["function_id"], name: "index_function_invocations_on_function_id"
@@ -29,6 +33,7 @@ ActiveRecord::Schema.define(version: 2024_08_08_155246) do
     t.bigint "user_id"
     t.bigint "parent_function_id"
     t.string "name"
+    t.string "slug"
     t.string "description"
     t.json "limits"
     t.json "env_vars"
@@ -40,6 +45,7 @@ ActiveRecord::Schema.define(version: 2024_08_08_155246) do
     t.datetime "updated_at", precision: 6, null: false
     t.index ["parent_function_id"], name: "index_functions_on_parent_function_id"
     t.index ["runtime_id"], name: "index_functions_on_runtime_id"
+    t.index ["slug"], name: "index_functions_on_slug"
     t.index ["user_id"], name: "index_functions_on_user_id"
   end
 
@@ -56,6 +62,7 @@ ActiveRecord::Schema.define(version: 2024_08_08_155246) do
     t.datetime "updated_at", precision: 6, null: false
     t.index ["creator_id"], name: "index_runtimes_on_creator_id"
     t.index ["parent_runtime_id"], name: "index_runtimes_on_parent_runtime_id"
+    t.index ["slug"], name: "index_runtimes_on_slug"
   end
 
   create_table "users", force: :cascade do |t|

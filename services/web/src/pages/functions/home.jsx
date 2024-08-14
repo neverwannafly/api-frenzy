@@ -77,7 +77,7 @@ function FunctionsDashboard() {
             variant="contained"
             color="primary"
             startIcon={<AddIcon />}
-            onClick={() => navigate('/dashboard/functions/new')}
+            onClick={() => navigate('/functions/new')}
           >
             Create Function
           </Button>

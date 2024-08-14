@@ -11,11 +11,13 @@ cd $curr_dir/services/web/ && echo $(pwd) && DOCKER_BUILDKIT=1 docker build --pl
 cd $curr_dir/services/web/ && echo $(pwd) && DOCKER_BUILDKIT=1 docker build --platform linux/amd64 -t af.web:v1 .
 cd $curr_dir/services/api/ && echo $(pwd) && DOCKER_BUILDKIT=1 docker build --platform linux/amd64 -t af.api:v1 .
 cd $curr_dir/services/nginx/ && echo $(pwd) && DOCKER_BUILDKIT=1 docker build --platform linux/amd64 -t af.nginx:v1 .
+cd $curr_dir/services/functions/ && echo $(pwd) && DOCKER_BUILDKIT=1 docker build --platform linux/amd64 -t af.functions:v1 .
+
+# Runtimes
+cd $curr_dir/runtimes/node18/ && echo $(pwd) && DOCKER_BUILDKIT=1 docker build --platform linux/amd64 -t af.runtime.node18:v1 .
 
 docker tag af.web-prod:v1 010928219493.dkr.ecr.ap-south-1.amazonaws.com/af.web:v1
 docker tag af.api:v1 010928219493.dkr.ecr.ap-south-1.amazonaws.com/af.api:v1
-docker tag af.nginx:v1 010928219493.dkr.ecr.ap-south-1.amazonaws.com/af.nginx:v1
+docker tag af.functions:v1 010928219493.dkr.ecr.ap-south-1.amazonaws.com/af.functions:v1
 
-docker push 010928219493.dkr.ecr.ap-south-1.amazonaws.com/af.web:v1
-docker push 010928219493.dkr.ecr.ap-south-1.amazonaws.com/af.api:v1
-docker push 010928219493.dkr.ecr.ap-south-1.amazonaws.com/af.nginx:v1
+docker tag af.runtime.node18:v1 public.ecr.aws/f2o5a2c3/af.runtime.node18:v1

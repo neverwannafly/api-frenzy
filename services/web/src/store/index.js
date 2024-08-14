@@ -7,9 +7,10 @@ import forms from './forms';
 import user from './user';
 import toast from './toast';
 import runtimes from './runtimes';
+import functions from './functions';
 
 const reducers = combineReducers({
-  forms, user, toast, runtimes,
+  forms, user, toast, runtimes, functions,
 });
 
 const middlewares = [thunk];

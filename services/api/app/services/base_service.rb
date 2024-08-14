@@ -1,5 +1,8 @@
 class BaseService
   INTERNAL_ERROR_MESSAGE = "Something went wrong with the service. Please try again after sometime"
+  INVALID_ARGUMENTS_ERROR = "Arguments are not valid"
+
+  include ::Exceptions
 
   def execute
     initialize_response

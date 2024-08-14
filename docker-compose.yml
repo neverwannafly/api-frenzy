@@ -25,6 +25,7 @@ services:
       - "redis"
     volumes:
       - ./services/api:/app
+    command: "rails"
 
   database:
     image: postgres:12.1

@@ -1,96 +1,117 @@
 const Docker = require("dockerode");
-const stream = require('stream');
+const stream = require("stream");
+
+const { ERROR_MESSAGES } = require('./constants');
 
 const docker = new Docker({
   socketPath: '/var/run/docker.sock'
 });
 
 async function pullContainer(image) {
-  imageUri = `${externalRegistry}/${image}`;
-  const auth = await externalRegistryAuth();
+  const images = await docker.listImages({ filters: { reference: [image] } });
+  if (images.length > 0) {
+    console.log(`Image ${image} found locally.`);
+    return;
+  }
 
-  options['authconfig'] = {
-    username: auth.username,
-    password: auth.password,
-  };
-
-  const pullStream = await docker.pull(imageUri, options);
+  const pullStream = await docker.pull(image, {});
 
   await new Promise(res => docker.modem.followProgress(pullStream, res));
 }
 
-async function runContainer(image, env, {
-  maxMemoryMb = 512,
-  maxStorageGb = 2,
-  cpuUnits = 700,
+async function runContainer(image, {
+  maxMemoryMb,
+  cpuUnits,
+  userCode = '',
+  userEnv = {},
+  userParams = {},
 }) {
-  const transformedEnv = Object.keys(env).map(k => `${k}=${env[k]}`);
-  
-  const container = await docker.createContainer({
-    Image: `${registry}/${image}`,
-    AttachStderr: false,
-    AttachStdin: false,
-    AttachStdout: false,
-    OpenStdin: false,
-    Env: transformedEnv,
-    Tty: false,
-    ExposedPorts: {},
-    HostConfig: {
-      AutoRemove: false,
-      NetworkMode: 'bridge',
-      Ulimits: [
-        { "Name": "nofile", "Soft": 1024, "Hard": 2048 },
+  try {
+    const transformedEnv = Object.keys(userEnv).map(k => `${k}=${env[k]}`);
+
+    const container = await docker.createContainer({
+      Image: image,
+      AttachStderr: true,
+      AttachStdin: false,
+      AttachStdout: true,
+      OpenStdin: false,
+      Env: [
+        ...transformedEnv,
+        `USER_CODE=${encodeURIComponent(userCode)}`,
+        `USER_PARAMS=${encodeURIComponent(JSON.stringify(userParams))}`
       ],
-      "PortBindings": {},
-      "CpuShares": parseInt(cpuUnits, 10),
-      "Memory": 1024000 * maxMemoryMb,
-      "MemoryReservation": 256000 * maxMemoryMb,
-      "StorageOpt": { "size": `${maxStorageGb}G` },
-      "PublishAllPorts": true,
-    },
-    "NetworkDisabled": false,
-  });
+      Tty: false,
+      HostConfig: {
+        NetworkMode: 'bridge',
+        Ulimits: [
+          { "Name": "nofile", "Soft": 1024, "Hard": 2048 },
+        ],
+        "CpuShares": parseInt(cpuUnits, 10),
+        "Memory": 1024 * 1024 * maxMemoryMb,
+      },
+      "NetworkDisabled": false,
+    });
 
-  await container.start();
+    await container.start();
+    const runStream = await container.attach({
+      stream: true,
+      stdout: true,
+      stderr: true
+    });
+    const stdoutStream = new stream.PassThrough();
+    const stderrStream = new stream.PassThrough();
 
-  return container;
+    container.modem.demuxStream(runStream, stdoutStream, stderrStream);
+
+    let stdout = '';
+    let stderr = '';
+
+    stdoutStream.on('data', data => stdout += data);
+    stderrStream.on('data', data => stderr += data);
+
+    await new Promise((resolve, reject) => {
+      runStream.on('end', resolve);
+      runStream.on('error', reject);
+      runStream.on('close', resolve);
+    });
+
+    const containerInfo = await container.inspect();
+    const exitCode = containerInfo.State.ExitCode;
+
+    if (exitCode in ERROR_MESSAGES) {
+      stderr ||= ERROR_MESSAGES[exitCode];
+    } else if (exitCode !== 0) {
+      stderr ||= 'Internal Server Error'
+    }
+
+    try {
+      await container.remove();
+    } catch (err) {
+      if (err.statusCode === 409 || err.statusCode === 404) {
+        console.log('Container removal is already in progress.');
+      } else {
+        console.error('Error removing container:', err);
+      }
+    }
+
+    return { stdout: transformStdout(stdout), stderr };
+  } catch (error) {
+    console.error('Error during container execution:', error);
+    throw error;
+  }
 }
 
-async function execCommand(container_id, command, env = []) {
-  const container = docker.getContainer(container_id);
-
-  const options = {
-    Cmd: ['sh', '-c', command],
-    Env: env,
-    AttachStdout: true,
-    AttachStderr: true
-  };
-
-  const exec = await container.exec(options);
-  const execStream = await exec.start();
-  const stdoutStream = new stream.PassThrough();
-  const stderrStream = new stream.PassThrough();
-
-  container.modem.demuxStream(execStream, stdoutStream, stderrStream);
-
-  let stdout = '';
-  let stderr = '';
-
-  stdoutStream.on('data', data => stdout += data);
-  stderrStream.on('data', data => stderr += data);
-
-  await new Promise((resolve, reject) => {
-    execStream.on('end', resolve);
-    execStream.on('error', reject);
-    execStream.on('close', resolve);
-  });
-
-  return { stdout, stderr };
+const transformStdout = (stdout) => {
+  placemarkerString = '[API-FRENZY] Result: ';
+  const parts = stdout.split(placemarkerString);
+  try {
+    return JSON.parse(parts[parts.length - 1]);
+  } catch (err) {
+    return stdout
+  }
 }
 
 module.exports = {
   pullContainer,
   runContainer,
-  execCommand,
 }
-

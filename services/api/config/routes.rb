@@ -9,7 +9,7 @@ Rails.application.routes.draw do
     resources :health_check, only: %i[index]
     resources :dashboard, only: %i[index]
     resources :user, only: %i[index]
-    resources :functions
+    resources :functions, only: %i[index show create update]
     resources :runtimes, only: %i[index]
   end
 end
