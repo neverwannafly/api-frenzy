@@ -2,7 +2,7 @@ class JwtAuth
   TOKEN_ISSUER = "api-frenzy".freeze
 
   def self.issue_token(user, expiry_in_hours = 72.hours)
-    exp = Time.now.to_i + (expiry_in_hours)
+    exp = (Time.now.to_i + expiry_in_hours).to_i
     iss = issuer
     id = user.id
 

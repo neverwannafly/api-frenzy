@@ -1,7 +1,7 @@
 class Functions::UpdateRevisionService < ::BaseService
   # These values should come from a policy
-  MAX_MEMORY_LIMIT = 80.megabytes
-  MAX_CPU_LIMIT = 400
+  MAX_MEMORY_LIMIT = 512.megabytes
+  MAX_CPU_LIMIT = 2000
   MAX_TIMEOUT = 5000
   MAX_ENV_VARS = 5
 

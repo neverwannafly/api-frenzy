@@ -52,10 +52,7 @@ function CreateFunction() {
   };
 
   const handleTestCode = async () => {
-    const response = await testCode({
-      image: 'af.runtime.node18:v1',
-      env: {},
-      code,
+    const response = await testCode(slug, {
       params: (() => { try { return JSON.parse(params); } catch (e) { return {}; } })(),
     });
     setOutput(JSON.stringify(response, null, 2));

@@ -4,6 +4,7 @@ const { readFileSync } = require('fs');
 
 const userCode = decodeURIComponent(process.env.USER_CODE);
 const userParams = JSON.parse(decodeURIComponent(process.env.USER_PARAMS));
+const timeout = parseInt(decodeURIComponent(process.env.TIMEOUT), 10) || 5000;
 
 const logs = [];
 const originalConsoleLog = console.log;
@@ -40,6 +41,8 @@ const sandbox = {
   ...cloneGlobal(),
   console,
   require: createCustomRequire(),
+  process,
+  Buffer
 };
 
 const runExecution = async() => {
@@ -48,7 +51,7 @@ const runExecution = async() => {
   const startMemoryUsage = process.memoryUsage();
 
   try {
-    script.runInNewContext(sandbox);
+    script.runInNewContext(sandbox, { timeout });
 
     if (typeof sandbox.module.exports === 'function') {
       const result = await sandbox.module.exports(userParams);
@@ -74,12 +77,11 @@ const runExecution = async() => {
         logs,
       }));
     } else {
-      console.error('No valid function export found in user code.');
-      throw Error("No valid function export found in user code")
+      throw Error("No valid function export found in user code");
     }
   } catch (error) {
-    console.error('Error executing user function:', error);
-    throw Error(`Error executing user function:, ${error}`)
+    console.error('Error during execution:', error.message);
+    throw Error(`Execution failed: ${error.message}`);
   }
 }
 

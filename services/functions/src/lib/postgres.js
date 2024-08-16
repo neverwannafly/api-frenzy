@@ -1,5 +1,10 @@
 const { Pool } = require('pg');
 
+let sslOptions = undefined;
+if (process.env.NODE_ENV === 'production') {
+  sslOptions = { rejectUnauthorized: false };
+}
+
 // PostgreSQL connection setup
 const pool = new Pool({
   user: process.env.DATABASE_USER,
@@ -7,9 +12,7 @@ const pool = new Pool({
   database: process.env.DATABASE_NAME,
   password: process.env.DATABASE_PASSWORD,
   port: 5432,
-  ssl: {
-    rejectUnauthorized: false,
-  },
+  ssl: sslOptions
 });
 
 const executeQuery = async (query, args) => {

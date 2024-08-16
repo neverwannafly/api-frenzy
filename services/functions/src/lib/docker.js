@@ -18,18 +18,21 @@ async function pullContainer(image) {
 
   await new Promise(res => docker.modem.followProgress(pullStream, res));
 }
-
 async function runContainer(image, {
   maxMemoryMb,
   cpuUnits,
   userCode = '',
-  userEnv = {},
+  userEnv = [],
   userParams = {},
+  timeout,
 }) {
-  try {
-    const transformedEnv = Object.keys(userEnv).map(k => `${k}=${env[k]}`);
+  let container;
+  let timeoutId;
 
-    const container = await docker.createContainer({
+  try {
+    const transformedEnv = userEnv.map(row => `${row.key}=${row.value}`);
+
+    container = await docker.createContainer({
       Image: image,
       AttachStderr: true,
       AttachStdin: false,
@@ -38,7 +41,8 @@ async function runContainer(image, {
       Env: [
         ...transformedEnv,
         `USER_CODE=${encodeURIComponent(userCode)}`,
-        `USER_PARAMS=${encodeURIComponent(JSON.stringify(userParams))}`
+        `USER_PARAMS=${encodeURIComponent(JSON.stringify(userParams))}`,
+        `TIMEOUT=${encodeURIComponent(timeout)}`
       ],
       Tty: false,
       HostConfig: {
@@ -47,7 +51,7 @@ async function runContainer(image, {
           { "Name": "nofile", "Soft": 1024, "Hard": 2048 },
         ],
         "CpuShares": parseInt(cpuUnits, 10),
-        "Memory": 1024 * 1024 * maxMemoryMb,
+        "Memory": maxMemoryMb,
       },
       "NetworkDisabled": false,
     });
@@ -69,11 +73,29 @@ async function runContainer(image, {
     stdoutStream.on('data', data => stdout += data);
     stderrStream.on('data', data => stderr += data);
 
-    await new Promise((resolve, reject) => {
-      runStream.on('end', resolve);
-      runStream.on('error', reject);
-      runStream.on('close', resolve);
+    const timeoutPromise = new Promise((_, reject) => {
+      timeoutId = setTimeout(async () => {
+        console.log(`Timeout reached. Stopping and removing container ${container.id}...`);
+        try {
+          await container.stop({ t: 5 });
+          await container.remove();
+          reject(new Error('Execution timed out'));
+        } catch (err) {
+          reject(new Error(`Error stopping/removing container: ${err.message}`));
+        }
+      }, timeout);
     });
+
+    await Promise.race([
+      new Promise((resolve, reject) => {
+        runStream.on('end', resolve);
+        runStream.on('error', reject);
+        runStream.on('close', resolve);
+      }),
+      timeoutPromise
+    ]);
+
+    clearTimeout(timeoutId);
 
     const containerInfo = await container.inspect();
     const exitCode = containerInfo.State.ExitCode;
@@ -81,7 +103,7 @@ async function runContainer(image, {
     if (exitCode in ERROR_MESSAGES) {
       stderr ||= ERROR_MESSAGES[exitCode];
     } else if (exitCode !== 0) {
-      stderr ||= 'Internal Server Error'
+      stderr ||= 'Internal Server Error';
     }
 
     try {
@@ -97,7 +119,18 @@ async function runContainer(image, {
     return { stdout: transformStdout(stdout), stderr };
   } catch (error) {
     console.error('Error during container execution:', error);
+    if (container) {
+      try {
+        await container.remove();
+      } catch (err) {
+        console.error('Error removing container after failure:', err);
+      }
+    }
     throw error;
+  } finally {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
   }
 }
 

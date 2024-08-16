@@ -7,7 +7,7 @@ const app = express();
 app.use(express.json());
 const port = process.env.PORT || 6969;
 
-app.use('/exec/fn', appRouter());
+app.use('/exec/fn/', appRouter());
 
 initializeApp().then(() => {
   app.listen(port, () => {

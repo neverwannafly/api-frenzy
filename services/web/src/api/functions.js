@@ -13,6 +13,6 @@ export const update = async (slug, payload) => (
   apiRequest('PATCH', `/api/functions/${slug}`, payload)
 );
 
-export const testCode = async (payload) => (
-  apiRequest('POST', '/exec/fn', payload)
+export const testCode = async (fnSlug, payload) => (
+  apiRequest('POST', `/exec/fn/${fnSlug}`, payload)
 );

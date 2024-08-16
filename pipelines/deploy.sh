@@ -45,19 +45,19 @@ fi
 aws ecs update-service \
   --cluster api-frenzy-prod \
   --service frontend-service \
-  --desired-count 1 \
+  --desired-count 0 \
   --force-new-deployment > deploy.log
 
 aws ecs update-service \
   --cluster api-frenzy-prod \
   --service backend-service \
-  --desired-count 1 \
+  --desired-count 0 \
   --force-new-deployment > deploy.log
 
 aws ecs update-service \
   --cluster api-frenzy-prod \
   --service functions-service \
-  --desired-count 1 \
+  --desired-count 0 \
   --force-new-deployment > deploy.log
 
 ## Service Deploy Done ##
