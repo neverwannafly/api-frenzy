@@ -7,22 +7,25 @@ import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import { Button } from '@mui/material';
+import { useMediaQuery } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 
 import Menu from './Menu';
 
 const LOGGEDIN_TABS = [
   { id: 1, label: 'Functions', url: '/functions' },
   { id: 2, label: 'Jobs', url: '/jobs' },
-  { id: 3, label: 'Workspaces', url: '/workspaces' },
 ];
 
 const LOGGEDOUT_TABS = [
-  { id: 1, label: 'Pricing', url: '/pricing' },
-  { id: 2, label: 'Documentation', url: '/documentation' },
+  { id: 1, label: 'Pricing', url: '#pricing' },
+  { id: 2, label: 'Features', url: '#features' },
 ];
 
 function Header() {
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const {
     isLoggedin,
   } = useSelector((state) => state.user);
@@ -48,12 +51,12 @@ function Header() {
               API Frenzy
             </div>
           </Typography>
-          {isLoggedin && (
+          {!isMobile && isLoggedin && (
             LOGGEDIN_TABS.map(({ id, label, url }) => (
               <Button key={id} color="inherit" onClick={handleClick(url)}>{label}</Button>
             ))
           )}
-          {!isLoggedin && (
+          {!isMobile && !isLoggedin && (
             LOGGEDOUT_TABS.map(({ id, label, url }) => (
               <Button key={id} color="inherit" onClick={handleClick(url)}>{label}</Button>
             ))

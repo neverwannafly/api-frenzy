@@ -1,6 +1,9 @@
 import apiRequest from '@app/lib/api';
 
-// eslint-disable-next-line import/prefer-default-export
+export const list = async (filters, page, limit) => (
+  apiRequest('POST', '/api/functions/1/list', { function: { filters, page, limit } })
+);
+
 export const create = async (payload) => (
   apiRequest('POST', '/api/functions', payload)
 );

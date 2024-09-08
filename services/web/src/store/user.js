@@ -1,5 +1,8 @@
 import { logout } from '@app/api/user';
 import { getUserDetails } from '@app/api/user';
+import { deleteAuthToken } from '@app/lib/auth';
+
+import { setToast } from './toast';
 
 const PROCESS_USER = 'user/PROCESS_USER';
 const SET_USER = 'user/SET_USER';
@@ -29,8 +32,13 @@ export const loadUser = () => async (dispatch, getState) => {
   if (isProcessing) return;
 
   dispatch({ type: PROCESS_USER });
-  const response = await getUserDetails();
-  dispatch({ type: SET_USER, payload: response });
+  try {
+    const response = await getUserDetails();
+    dispatch({ type: SET_USER, payload: response });
+  } catch (e) {
+    deleteAuthToken();
+    dispatch(setToast({ type: 'error', message: 'Your auth token is expired or invalid' }));
+  }
 };
 
 export default function (state = initialState, { type, payload }) {

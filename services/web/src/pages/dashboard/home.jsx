@@ -1,27 +1,130 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
+
 import {
-  Typography, Container, Grid, Paper,
-  Box, Card, CardContent, CardActions, Button,
-  List, ListItem, ListItemText, ListItemIcon,
-  Tabs, Tab,
+  Box,
+  Container,
+  Grid,
+  Paper,
+  Typography,
+  useTheme,
+  Card,
+  CardContent,
+  CardActions,
+  List,
+  Button,
+  ListItem,
+  ListItemText,
+  Divider,
 } from '@mui/material';
-import { styled } from '@mui/material/styles';
 import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+} from 'recharts';
+import {
+  TrendingUp,
+  AccessTime,
+  Code,
+  Speed,
   AddCircleOutline as AddIcon,
   FunctionsTwoTone as FunctionsIcon,
   WorkTwoTone as JobsIcon,
-  ComputerTwoTone as WorkspaceIcon,
-  MemoryTwoTone as CPUIcon,
-  StorageTwoTone as StorageIcon,
-  TimerTwoTone as InvocationsIcon,
-  AttachMoneyTwoTone as BillingIcon,
 } from '@mui/icons-material';
+import { styled } from '@mui/material/styles';
+
+// Mock data for charts and metrics
+const apiCallsData = [
+  { name: 'Mon', calls: 4000 },
+  { name: 'Tue', calls: 3000 },
+  { name: 'Wed', calls: 2000 },
+  { name: 'Thu', calls: 2780 },
+  { name: 'Fri', calls: 1890 },
+  { name: 'Sat', calls: 2390 },
+  { name: 'Sun', calls: 3490 },
+];
+
+const apiUsageData = [
+  { name: 'API 1', value: 400 },
+  { name: 'API 2', value: 300 },
+  { name: 'API 3', value: 300 },
+  { name: 'API 4', value: 200 },
+];
+
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
+
+const recentActivity = [
+  { id: 1, action: 'Created new API: User Authentication', time: '2 hours ago' },
+  { id: 2, action: 'Updated API: Payment Gateway', time: '5 hours ago' },
+  { id: 3, action: 'Deleted API: Test Endpoint', time: '1 day ago' },
+  { id: 4, action: 'Added new collaborator to: Data Analytics API', time: '2 days ago' },
+];
+
+const actionCards = [
+  {
+    id: 1,
+    title: 'Functions',
+    description: 'Create and manage your serverless functions',
+    icon: <FunctionsIcon fontSize="large" color="primary" />,
+    action: '/functions/new',
+  },
+  {
+    id: 2,
+    title: 'Jobs',
+    description: 'Set up and monitor background tasks',
+    icon: <JobsIcon fontSize="large" color="primary" />,
+    action: '/jobs/new',
+  },
+];
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(3),
   height: '100%',
 }));
+
+function ComingSoonOverlay({ children }) {
+  return (
+    <Box position="relative" display="inline-block">
+      {children}
+      <Box
+        position="absolute"
+        top={0}
+        left={0}
+        right={0}
+        bottom={0}
+        sx={{
+          background: 'rgba(255, 255, 255, 0.7)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1,
+          backdropFilter: 'blur(1.5px)',
+          borderRadius: '12px',
+        }}
+      >
+        <Typography
+          variant="h3"
+          color="rgba(0, 0, 0, 0.7)"
+          fontWeight="700"
+          sx={{
+            textTransform: 'capitalize',
+            letterSpacing: '1px',
+            textShadow: '1px 1px 8px rgba(255, 255, 255, 0.8)',
+          }}
+        >
+          Coming Soon
+        </Typography>
+      </Box>
+    </Box>
+  );
+}
 
 function ActionCard({
   title, description, icon, action,
@@ -50,112 +153,124 @@ function ActionCard({
   );
 }
 
-function StatItem({ icon, primary, secondary }) {
+function MetricCard({ title, value, icon }) {
   return (
-    <ListItem>
-      <ListItemIcon>{icon}</ListItemIcon>
-      <ListItemText primary={primary} secondary={secondary} />
-    </ListItem>
+    <Card>
+      <CardContent>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+          {icon}
+          <Typography variant="h6" component="div" sx={{ ml: 1 }}>
+            {title}
+          </Typography>
+        </Box>
+        <Typography variant="h4" component="div" color="primary">
+          {value}
+        </Typography>
+      </CardContent>
+    </Card>
   );
 }
 
 function Dashboard() {
-  const [currentTab, setCurrentTab] = useState(0);
-
-  const actionCards = [
-    {
-      id: 1,
-      title: 'Functions',
-      description: 'Create and manage your serverless functions',
-      icon: <FunctionsIcon fontSize="large" color="primary" />,
-      action: '/functions/new',
-    },
-    {
-      id: 2,
-      title: 'Jobs',
-      description: 'Set up and monitor background tasks',
-      icon: <JobsIcon fontSize="large" color="primary" />,
-      action: '/jobs/new',
-    },
-    {
-      id: 3,
-      title: 'Workspaces',
-      description: 'Manage your development environments',
-      icon: <WorkspaceIcon fontSize="large" color="primary" />,
-      action: '/workspaces/new',
-    },
-  ];
+  const theme = useTheme();
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={8}>
-          <StyledPaper>
-            <Typography variant="h5" gutterBottom>Quick Actions</Typography>
-            <Grid container spacing={3}>
-              {actionCards.map((card) => (
-                <Grid item xs={12} sm={6} md={4} key={card.id}>
-                  <ActionCard {...card} />
-                </Grid>
-              ))}
+    <Box sx={{ flexGrow: 1, bgcolor: 'background.default', py: 3 }}>
+      <Container maxWidth="lg">
+        <Typography variant="h4" sx={{ mb: 4 }}>
+          Dashboard
+        </Typography>
+        <StyledPaper>
+          <Typography variant="h5" gutterBottom>Quick Actions</Typography>
+          <Grid container spacing={3}>
+            {actionCards.map((card) => (
+              <Grid item xs={12} sm={6} md={4} key={card.id}>
+                <ActionCard {...card} />
+              </Grid>
+            ))}
+          </Grid>
+        </StyledPaper>
+        <Divider sx={{ my: 4 }} />
+        <ComingSoonOverlay>
+          <Grid container spacing={3}>
+            {/* Metric Cards */}
+            <Grid item xs={12} sm={6} md={3}>
+              <MetricCard title="Total API Calls" value="28,550" icon={<TrendingUp color="primary" />} />
             </Grid>
-          </StyledPaper>
-        </Grid>
-        <Grid item xs={12} md={4}>
-          <StyledPaper>
-            <Typography variant="h5" gutterBottom>Account Overview</Typography>
-            <List>
-              <StatItem
-                icon={<CPUIcon color="primary" />}
-                primary="CPU Usage"
-                secondary="65%"
-              />
-              <StatItem
-                icon={<StorageIcon color="primary" />}
-                primary="Storage Used"
-                secondary="2.3 GB"
-              />
-              <StatItem
-                icon={<InvocationsIcon color="primary" />}
-                primary="Total Invocations"
-                secondary="1,234"
-              />
-              <StatItem
-                icon={<BillingIcon color="primary" />}
-                primary="Current Bill"
-                secondary="$12.34"
-              />
-            </List>
-          </StyledPaper>
-        </Grid>
-        <Grid item xs={12} sx={{ mt: 5, mb: 5 }}>
-          <StyledPaper>
-            <Tabs value={currentTab} onChange={(e, newValue) => setCurrentTab(newValue)}>
-              <Tab label="Functions" icon={<FunctionsIcon />} iconPosition="start" />
-              <Tab label="Background Jobs" icon={<JobsIcon />} iconPosition="start" />
-              <Tab label="Workspaces" icon={<WorkspaceIcon />} iconPosition="start" />
-            </Tabs>
-            <Box mt={3}>
-              {currentTab === 0 && (
-              <Typography variant="body1">
-                Function details and management interface goes here.
-              </Typography>
-              )}
-              {currentTab === 1 && (
-              <Typography variant="body1">
-                Background job details and management interface goes here.
-              </Typography>
-              )}
-              {currentTab === 2 && (
-              <Typography variant="body1">
-                Workspace details and management interface goes here.
-              </Typography>
-              )}
-            </Box>
-          </StyledPaper>
-        </Grid>
-      </Grid>
-    </Container>
+            <Grid item xs={12} sm={6} md={3}>
+              <MetricCard title="Avg. Response Time" value="235ms" icon={<AccessTime color="primary" />} />
+            </Grid>
+            <Grid item xs={12} sm={6} md={3}>
+              <MetricCard title="Active APIs" value="12" icon={<Code color="primary" />} />
+            </Grid>
+            <Grid item xs={12} sm={6} md={3}>
+              <MetricCard title="Uptime" value="99.99%" icon={<Speed color="primary" />} />
+            </Grid>
+
+            {/* API Calls Chart */}
+            <Grid item xs={12} md={8}>
+              <Paper sx={{ p: 2 }}>
+                <Typography variant="h6" gutterBottom>API Calls (Last 7 Days)</Typography>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={apiCallsData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip />
+                    <Bar dataKey="calls" fill={theme.palette.primary.main} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </Paper>
+            </Grid>
+
+            {/* API Usage Pie Chart */}
+            <Grid item xs={12} md={4}>
+              <Paper sx={{ p: 2 }}>
+                <Typography variant="h6" gutterBottom>API Usage Distribution</Typography>
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie
+                      data={apiUsageData}
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                      label
+                    >
+                      {apiUsageData.map((entry, index) => (
+                        <Cell key={entry} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              </Paper>
+            </Grid>
+
+            {/* Recent Activity */}
+            <Grid item xs={12}>
+              <Paper sx={{ p: 2 }}>
+                <Typography variant="h6" gutterBottom>Recent Activity</Typography>
+                <List>
+                  {recentActivity.map((activity, index) => (
+                    <React.Fragment key={activity.id}>
+                      <ListItem alignItems="flex-start">
+                        <ListItemText
+                          primary={activity.action}
+                          secondary={activity.time}
+                        />
+                      </ListItem>
+                      {index < recentActivity.length - 1 && <Divider />}
+                    </React.Fragment>
+                  ))}
+                </List>
+              </Paper>
+            </Grid>
+          </Grid>
+        </ComingSoonOverlay>
+      </Container>
+    </Box>
   );
 }
 

@@ -18,6 +18,7 @@ function ToastHandler() {
       open={open}
       autoHideDuration={6000}
       onClose={handleClose}
+      anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
     >
       <MuiAlert
         elevation={6}

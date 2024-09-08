@@ -2,10 +2,11 @@ class FunctionsController < ApplicationController
   before_action :authenticate_user!
   before_action :initialize_runtime, only: %i[create]
   before_action :initialize_function, only: %i[show update]
+  before_action :initialize_filters, only: %i[index]
 
   def index
-    functions = Function.where(user: @current_user)
-    render json: FunctionSerializer.new(functions)
+    functions = @functions_filter.apply()
+    render json: FunctionSerializer.new(functions, include: %i[runtime])
   end
 
   def show
@@ -40,5 +41,10 @@ class FunctionsController < ApplicationController
 
   def update_function_params
     params.require(:function).permit(:code, env_vars: [:key, :value], limits: %i[cpu memory timeout])
+  end
+
+  def initialize_filters
+    filter_params = params.require(:function).permit(:page, :limit, filters: [:type, :value])
+    @functions_filter = Functions::Filter.new(user: @current_user, filter_params: filter_params.to_h)
   end
 end

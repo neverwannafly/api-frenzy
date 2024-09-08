@@ -30,7 +30,7 @@ function Footer() {
         <Grid container spacing={4}>
           <Grid item xs={12} md={4}>
             <Typography variant="h6" gutterBottom>API Frenzy</Typography>
-            <Typography variant="body2">Empowering developers with simple, powerful API management solutions.</Typography>
+            <Typography variant="body2">The ultimate marketplace for APIs. Create, share, and innovate together.</Typography>
           </Grid>
           <Grid item xs={12} md={4}>
             <Typography variant="h6" gutterBottom>Quick Links</Typography>

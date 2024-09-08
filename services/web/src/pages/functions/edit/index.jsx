@@ -4,13 +4,14 @@ import {
   Button,
   Typography,
   Paper,
-  CircularProgress,
 } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
 import { loadFunction } from '@app/store/functions';
 import { update as updateFunction, testCode } from '@app/api/functions';
+import EmptyList from '@app/components/EmptyList';
+import Loader from '@app/components/Loader';
 
 import CodeEditor from './codeEditor';
 import Settings from './settings';
@@ -27,7 +28,7 @@ function CreateFunction() {
   const { slug } = useParams();
 
   const dispatch = useDispatch();
-  const { isLoading, data } = useSelector((state) => state.functions);
+  const { isLoading, data, error } = useSelector((state) => state.functions[slug]) || {};
 
   useEffect(() => {
     dispatch(loadFunction(slug));
@@ -35,10 +36,19 @@ function CreateFunction() {
 
   useEffect(() => {
     if (data) {
-      const { name: functionName, code: userCode } = data.data.attributes;
+      const {
+        name: functionName, code: userCode, limits, env_vars: envVars,
+      } = data.data.attributes;
       const { name: runtimeName, placeholder } = data.included[0].attributes;
+      const { cpu, memory, timeout } = limits || {};
+
       setHeading(`${functionName} (${runtimeName})`);
       setCode(userCode || placeholder);
+
+      if (cpu) setCpuAllocation(cpu);
+      if (memory) setMemoryAllocation(memory / (1024 * 1024));
+      if (timeout) setTime(timeout);
+      if (envVars) setEnvironment(envVars);
     }
   }, [data]);
 
@@ -62,13 +72,12 @@ function CreateFunction() {
     // Implement save function logic
   };
 
+  if (error) {
+    return <EmptyList />;
+  }
+
   if (isLoading) {
-    return (
-      <CircularProgress
-        color="secondary"
-        sx={{ marginRight: 'auto', marginLeft: 'auto', display: 'block' }}
-      />
-    );
+    return <Loader />;
   }
 
   return (
