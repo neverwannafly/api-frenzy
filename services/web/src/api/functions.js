@@ -17,5 +17,5 @@ export const update = async (slug, payload) => (
 );
 
 export const testCode = async (fnSlug, payload) => (
-  apiRequest('POST', `/exec/fn/${fnSlug}`, payload)
+  apiRequest('POST', `/exec/fn/${fnSlug}`, payload, {}, { allowAllFormats: true })
 );

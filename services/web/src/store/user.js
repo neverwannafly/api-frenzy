@@ -8,6 +8,7 @@ import { batch } from 'react-redux';
 const PROCESS_USER = 'user/PROCESS_USER';
 const SET_USER = 'user/SET_USER';
 const UNSET_USER = 'user/UNSET_USER';
+export const MARK_USER_SET = 'user/MARK_USER_SET';
 
 const initialState = {
   isLoggedin: false,
@@ -58,6 +59,8 @@ export default function (state = initialState, { type, payload }) {
       return { isLoggedin: false, data: null, isProcessing: false };
     case PROCESS_USER:
       return { ...state, isProcessing: true };
+    case MARK_USER_SET:
+      return { ...state, isSet: true };
     default:
       return { ...state };
   }

@@ -31,7 +31,7 @@ async function parseJsonResponse(response) {
   throw error;
 }
 
-export default async function apiRequest(method, path, body = null, options = {}) {
+export default async function apiRequest(method, path, body = null, options = {}, settings = {}) {
   const defaultHeaders = {
     Accept: 'application/json',
     'Content-Type': 'application/json',
@@ -68,5 +68,9 @@ export default async function apiRequest(method, path, body = null, options = {}
 
   const response = await fetch(updatedPath, finalOptions);
 
-  return parseJsonResponse(response);
+  if (settings.allowAllFormats) {
+    return response;
+  }
+
+  return parseJsonResponse(response, settings);
 }

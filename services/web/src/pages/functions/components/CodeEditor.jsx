@@ -13,6 +13,27 @@ import CodeIcon from '@mui/icons-material/Code';
 import SettingsIcon from '@mui/icons-material/Settings';
 import OutputIcon from '@mui/icons-material/Output';
 
+function OutputHandler({
+  data,
+  contentType,
+}) {
+  if (data === null || data === undefined) {
+    return <pre style={{ margin: 0 }}>Output will be displayed here</pre>;
+  }
+
+  if (contentType.includes('application/json')) {
+    return <pre style={{ margin: 0 }}>{data}</pre>;
+  }
+
+  return (
+    <iframe
+      srcDoc={data}
+      style={{ width: '100%', border: 'none' }}
+      title="Code Output"
+    />
+  );
+}
+
 function PaneHeader({
   title, icon,
 }) {
@@ -103,7 +124,7 @@ function CodeEditor({
                 <PaneHeader title="Output" icon={<OutputIcon fontSize="small" />} />
                 <Box p={2} flexGrow={1} overflow="auto" sx={{ fontFamily: 'monospace', fontSize: '0.9rem' }}>
                   {isOutputLoading ? <CircularProgress color="primary" /> : (
-                    <pre style={{ margin: 0 }}>{output || 'Output will be displayed here'}</pre>
+                    <OutputHandler data={output?.data} contentType={output?.contentType} />
                   )}
                 </Box>
               </Paper>

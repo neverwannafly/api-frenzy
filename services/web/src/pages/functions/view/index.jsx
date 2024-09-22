@@ -3,13 +3,14 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import {
   Box, Button, Divider, Paper, Typography, Alert,
+  Checkbox, FormControlLabel,
 } from '@mui/material';
 
-import { testCode } from '@app/api/functions';
 import CodeEditor from '@app/pages/functions/components/CodeEditor';
 import { loadFunction } from '@app/store/functions';
 import EmptyList from '@app/components/EmptyList';
 import Loader from '@app/components/Loader';
+import useCodeOutputHandler from '@app/hooks/useCodeOutputHandler';
 
 import CopyToClickboard from './CopyToClipboard';
 
@@ -26,8 +27,10 @@ function ViewFunctionComponent() {
   } = data?.data?.attributes || {};
   const { name: runtimeName } = data?.included[0]?.attributes || {};
   const [params, setParams] = useState('');
-  const [output, setOutput] = useState(null);
-  const [outputLoading, setOutputLoading] = useState(false);
+  const {
+    output, outputLoading, handleCodeRun, toggleRawOutput,
+  } = useCodeOutputHandler(slug, params);
+  const [checked, setChecked] = useState(false);
 
   useEffect(() => {
     dispatch(loadFunction(slug));
@@ -39,13 +42,9 @@ function ViewFunctionComponent() {
     }
   }, [defaultParams]);
 
-  const handleCodeRun = async () => {
-    setOutputLoading(true);
-    const response = await testCode(slug, {
-      params: (() => { try { return JSON.parse(params); } catch (e) { return {}; } })(),
-    });
-    setOutput(JSON.stringify(response, null, 2));
-    setOutputLoading(false);
+  const handleRawOutputClick = () => {
+    setParams(toggleRawOutput(params));
+    setChecked((prevChecked) => !prevChecked);
   };
 
   if (error) {
@@ -68,6 +67,17 @@ function ViewFunctionComponent() {
         <Typography gutterBottom>
           {description}
         </Typography>
+
+        <FormControlLabel
+          control={(
+            <Checkbox
+              checked={checked}
+              onChange={handleRawOutputClick}
+              color="primary"
+            />
+        )}
+          label="Toggle Raw Output"
+        />
 
         <Box sx={{ my: 2 }}>
           <Button variant="contained" color="primary" onClick={handleCodeRun}>

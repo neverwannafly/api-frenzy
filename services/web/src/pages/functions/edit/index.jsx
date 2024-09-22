@@ -1,19 +1,23 @@
 import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useParams } from 'react-router-dom';
+
 import {
   Box,
   Button,
   Typography,
   Paper,
   Divider,
+  Checkbox,
+  FormControlLabel,
 } from '@mui/material';
-import { useDispatch, useSelector } from 'react-redux';
-import { useParams } from 'react-router-dom';
 
 import { loadFunction } from '@app/store/functions';
-import { update as updateFunction, testCode } from '@app/api/functions';
+import { update as updateFunction } from '@app/api/functions';
 import EmptyList from '@app/components/EmptyList';
 import Loader from '@app/components/Loader';
 import CodeEditor from '@app/pages/functions/components/CodeEditor';
+import useCodeOutputHandler from '@app/hooks/useCodeOutputHandler';
 
 import Settings from './settings';
 
@@ -21,13 +25,12 @@ function CreateFunction() {
   const [heading, setHeading] = useState('');
   const [code, setCode] = useState('// Your code here');
   const [params, setParams] = useState('{\n    \n}');
-  const [output, setOutput] = useState(null);
   const [memoryAllocation, setMemoryAllocation] = useState(16);
   const [cpuAllocation, setCpuAllocation] = useState(200);
   const [time, setTime] = useState(500);
   const [environment, setEnvironment] = useState([]);
-  const [outputLoading, setOutputLoading] = useState(false);
   const { slug } = useParams();
+  const [checked, setChecked] = useState(false);
 
   const dispatch = useDispatch();
   const { isLoading, data, error } = useSelector((state) => state.functions[slug]) || {};
@@ -59,6 +62,15 @@ function CreateFunction() {
     }
   }, [data]);
 
+  const {
+    output, outputLoading, handleCodeRun, toggleRawOutput,
+  } = useCodeOutputHandler(slug, params);
+
+  const handleRawOutputClick = () => {
+    setParams(toggleRawOutput(params));
+    setChecked((prevChecked) => !prevChecked);
+  };
+
   const handleSaveCode = async () => {
     const jsonParams = (() => { try { return JSON.parse(params); } catch (e) { return {}; } })();
     await updateFunction(slug, {
@@ -67,15 +79,6 @@ function CreateFunction() {
       limits: { cpu: cpuAllocation, memory: memoryAllocation, timeout: time },
       default_params: jsonParams,
     });
-  };
-
-  const handleTestCode = async () => {
-    setOutputLoading(true);
-    const response = await testCode(slug, {
-      params: (() => { try { return JSON.parse(params); } catch (e) { return {}; } })(),
-    });
-    setOutput(JSON.stringify(response, null, 2));
-    setOutputLoading(false);
   };
 
   const handleSaveFunction = async () => {
@@ -110,10 +113,21 @@ function CreateFunction() {
           <Button variant="contained" color="primary" onClick={handleSaveCode} sx={{ mr: 1 }}>
             Save Code
           </Button>
-          <Button variant="outlined" color="primary" onClick={handleTestCode}>
+          <Button variant="outlined" color="primary" onClick={handleCodeRun}>
             Test Code
           </Button>
         </Box>
+
+        <FormControlLabel
+          control={(
+            <Checkbox
+              checked={checked}
+              onChange={handleRawOutputClick}
+              color="primary"
+            />
+        )}
+          label="Toggle Raw Output"
+        />
 
         <CodeEditor
           code={code}

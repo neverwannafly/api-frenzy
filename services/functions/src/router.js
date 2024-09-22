@@ -41,8 +41,11 @@ function router() {
 
       const success = stderr.length === 0;
       createFunctionInvocation(fn, user, fetchUserData(req), { stdout, stderr, success });
-
-      res.status(200).json({ success, output: { stdout, stderr } });
+      if (params.enableRawOutput) {
+        res.status(200).send(stdout.result);
+      } else {
+        res.status(200).json({ success, output: { stdout, stderr } });
+      }
     } catch (error) {
       console.error('Error during container execution:', error);
       res.status(500).json({ success: false, error: 'Failed to execute code.', details: error.message });
@@ -78,8 +81,12 @@ function router() {
 
       const success = stderr.length === 0;
       createFunctionInvocation(fn, user, fetchUserData(req), { stdout, stderr, success });
-  
-      res.status(200).json({ success, output: { stdout, stderr } });
+
+      if (params.enableRawOutput) {
+        res.status(200).send(stdout.result);
+      } else {
+        res.status(200).json({ success, output: { stdout, stderr } });
+      }
     } catch (error) {
       console.error('Error during container execution:', error);
       res.status(500).json({ success: false, error: 'Failed to execute code.', details: error.message });

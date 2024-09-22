@@ -37,7 +37,6 @@ function useForm({
 
     try {
       const response = await apiRequest('POST', baseUrl, formState);
-      console.log(response);
       if (Object.keys(response).includes('error')) {
         dispatch(setToast({
           message: response.error || 'Something went wrong! Please try again later!',
