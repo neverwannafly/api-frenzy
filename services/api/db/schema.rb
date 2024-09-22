@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2024_08_08_155246) do
+ActiveRecord::Schema.define(version: 2024_09_22_091926) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -18,14 +18,18 @@ ActiveRecord::Schema.define(version: 2024_08_08_155246) do
   create_table "function_invocations", force: :cascade do |t|
     t.bigint "function_id"
     t.integer "status"
-    t.integer "time"
-    t.integer "memory"
-    t.integer "cpu_system"
-    t.integer "cpu_user"
+    t.float "time"
+    t.float "memory"
+    t.float "cpu_system"
+    t.float "cpu_user"
     t.json "output"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.json "user_details"
+    t.string "invoker_type"
+    t.bigint "invoker_id"
     t.index ["function_id"], name: "index_function_invocations_on_function_id"
+    t.index ["invoker_type", "invoker_id"], name: "index_function_invocations_on_invoker_type_and_invoker_id"
   end
 
   create_table "functions", force: :cascade do |t|
@@ -43,6 +47,7 @@ ActiveRecord::Schema.define(version: 2024_08_08_155246) do
     t.integer "version"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.json "default_params"
     t.index ["parent_function_id"], name: "index_functions_on_parent_function_id"
     t.index ["runtime_id"], name: "index_functions_on_runtime_id"
     t.index ["slug"], name: "index_functions_on_slug"

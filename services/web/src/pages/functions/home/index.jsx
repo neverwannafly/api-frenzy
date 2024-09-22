@@ -1,4 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
 import {
   Box,
   Button,
@@ -20,12 +22,11 @@ import {
 } from '@mui/icons-material';
 import { useDispatch } from 'react-redux';
 import { listFunctions } from '@app/store/functions';
-import ListView from './ListView';
-import { useNavigate } from 'react-router-dom';
+import ListView from '@app/pages/functions/components/ListView';
 
 function FunctionsDashboard() {
   const theme = useTheme();
-  const [selectedFilter, setSelectedFilter] = useState('trending');
+  const [selectedFilter, setSelectedFilter] = useState('my_functions');
   const [searchText, setSearchtext] = useState('');
   const [page] = useState(0);
 

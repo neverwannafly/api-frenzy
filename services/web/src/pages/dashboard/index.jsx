@@ -1,6 +1,8 @@
 import React from 'react';
 import { Route, Routes } from 'react-router-dom';
 
+import withLogin from '@app/hoc/withLogin';
+
 import Home from './home';
 
 function Dashboard() {
@@ -11,4 +13,4 @@ function Dashboard() {
   );
 }
 
-export default Dashboard;
+export default withLogin(Dashboard);

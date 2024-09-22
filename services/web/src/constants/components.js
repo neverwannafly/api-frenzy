@@ -11,8 +11,9 @@ export const MENU_ITEMS = [{
 {
   label: 'Logout',
   onClick: ({ navigate, dispatch }) => {
-    dispatch(unsetUser());
-    deleteAuthToken();
-    navigate('/');
+    dispatch(unsetUser(() => {
+      deleteAuthToken();
+      navigate('/');
+    }));
   },
 }];

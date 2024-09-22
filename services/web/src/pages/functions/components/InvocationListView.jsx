@@ -102,7 +102,12 @@ function ListView() {
                   },
                 }}
               >
-                <TableCell component="th" scope="row">
+                <TableCell
+                  component="th"
+                  scope="row"
+                  sx={{ cursor: 'pointer' }}
+                  onClick={() => navigate(`/functions/${slug}/`)}
+                >
                   {name}
                 </TableCell>
                 <TableCell align="right">{runtime}</TableCell>

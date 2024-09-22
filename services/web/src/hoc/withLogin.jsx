@@ -1,24 +1,20 @@
-import React from 'react';
-import { useSelector } from 'react-redux';
-import { Redirect } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+
+import { setForm } from '@app/store/forms';
 
 function withLogin(Component) {
   return function (props) {
-    const { isLoggedin } = useSelector((state) => state.user);
-    const { location } = props;
+    const { isLoggedin, isSet } = useSelector((state) => state.user);
+    const dispatch = useDispatch();
 
-    if (isLoggedin) {
-      return <Component {...props} />;
-    }
+    useEffect(() => {
+      if (isSet && !isLoggedin) {
+        dispatch(setForm({ form: 'auth' }));
+      }
+    }, [dispatch, isLoggedin, isSet]);
 
-    return (
-      <Redirect
-        to={{
-          pathname: '/',
-          state: { from: location },
-        }}
-      />
-    );
+    return <Component {...props} />;
   };
 }
 

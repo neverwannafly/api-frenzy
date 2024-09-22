@@ -5,7 +5,7 @@ import {
   Box,
   Divider,
 } from '@mui/material';
-import AuthForm from '@app/components/auth';
+import withLogout from '@app/hoc/withLogout';
 
 import HeroSection from './HeroSection';
 import FeaturesSection from './FeatureSection';
@@ -24,9 +24,8 @@ function LandingPage() {
         <Divider />
         <CTASection />
       </Container>
-      <AuthForm />
     </Box>
   );
 }
 
-export default LandingPage;
+export default withLogout(LandingPage);

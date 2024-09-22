@@ -1,24 +1,20 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { Redirect } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 function withLogout(Component) {
   return function (props) {
     const { isLoggedin } = useSelector((state) => state.user);
     const { location } = props;
+    const navigate = useNavigate();
 
-    if (!isLoggedin) {
-      return <Component {...props} />;
-    }
+    useEffect(() => {
+      if (isLoggedin) {
+        navigate('/dashboard', { state: { from: location } });
+      }
+    }, [location, navigate, isLoggedin]);
 
-    return (
-      <Redirect
-        to={{
-          pathname: '/',
-          state: { from: location },
-        }}
-      />
-    );
+    return <Component {...props} />;
   };
 }
 

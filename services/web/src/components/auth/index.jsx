@@ -15,7 +15,7 @@ import { unsetForm } from '@app/store/forms';
 import SigninForm from './SigninForm';
 import SignupForm from './SignupForm';
 
-function AuthForm() {
+function AuthForm({ allowClose = true }) {
   const [formType, setFormType] = useState('signin');
   const { auth } = useSelector((state) => state.forms);
   const dispatch = useDispatch();
@@ -23,6 +23,7 @@ function AuthForm() {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const handleClose = () => {
+    if (!allowClose) return;
     dispatch(unsetForm({ form: 'auth' }));
   };
   const toggleAuthMode = () => {

@@ -1,5 +1,9 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+
+import ListView from '@app/pages/functions/components/ListView';
+import { listFunctions } from '@app/store/functions';
 
 import {
   Box,
@@ -173,6 +177,13 @@ function MetricCard({ title, value, icon }) {
 
 function Dashboard() {
   const theme = useTheme();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  useEffect(() => {
+    const filters = [];
+    filters.push({ type: 'my_functions', value: true });
+    dispatch(listFunctions(filters, 0, 5, true));
+  }, [dispatch]);
 
   return (
     <Box sx={{ flexGrow: 1, bgcolor: 'background.default', py: 3 }}>
@@ -190,6 +201,20 @@ function Dashboard() {
             ))}
           </Grid>
         </StyledPaper>
+        <Divider sx={{ my: 4 }} />
+        <div>
+          <Typography variant="h5" sx={{ mb: 4 }}>
+            My Functions
+          </Typography>
+          <ListView />
+          <Button
+            sx={{ mt: 4 }}
+            onClick={() => navigate('/functions/')}
+            variant="contained"
+          >
+            Expolore More
+          </Button>
+        </div>
         <Divider sx={{ my: 4 }} />
         <ComingSoonOverlay>
           <Grid container spacing={3}>

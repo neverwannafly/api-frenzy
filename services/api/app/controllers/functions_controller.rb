@@ -19,7 +19,9 @@ class FunctionsController < ApplicationController
   end
 
   def update
-    res = Functions::UpdateRevisionService.execute(function: @function, updation_params: update_function_params)
+    res = Functions::UpdateRevisionService.execute(
+      function: @function, updation_params: update_function_params, publish: params.dig(:publish)
+    )
     render json: res
   end
 
@@ -27,7 +29,7 @@ class FunctionsController < ApplicationController
 
   def initialize_function
     @function = Function.find_by_slug(params.dig(:id))
-    head :not_found and return unless @function.present?
+    head :not_found and return unless @function.present? # Policy for functions
   end
 
   def initialize_runtime
@@ -40,7 +42,9 @@ class FunctionsController < ApplicationController
   end
 
   def update_function_params
-    params.require(:function).permit(:code, env_vars: [:key, :value], limits: %i[cpu memory timeout])
+    params.require(:function).permit(:code, env_vars: [:key, :value], limits: %i[cpu memory timeout]).tap do |whitelisted|
+      whitelisted[:default_params] = params[:function][:default_params].permit! if params[:function][:default_params].present?
+    end    
   end
 
   def initialize_filters

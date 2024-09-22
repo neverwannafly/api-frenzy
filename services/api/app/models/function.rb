@@ -5,6 +5,8 @@ class Function < ApplicationRecord
   belongs_to :runtime
   belongs_to :user
 
+  has_many :function_invocations
+
   enum visibility: %i[public private], _suffix: true
   enum status: %i[draft active inactive deleted]
 

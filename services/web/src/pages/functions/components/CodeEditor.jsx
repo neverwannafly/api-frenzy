@@ -7,6 +7,7 @@ import {
   Typography,
   Box,
   Paper,
+  CircularProgress,
 } from '@mui/material';
 import CodeIcon from '@mui/icons-material/Code';
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -37,7 +38,9 @@ const editorSettings = {
 };
 
 function CodeEditor({
-  code, setCode, params, setParams, output,
+  code, setCode, params, setParams,
+  output, readOnly = false,
+  isOutputLoading,
 }) {
   return (
     <Box flexGrow={1} sx={{ overflow: 'hidden', display: 'flex', height: '500px' }}>
@@ -60,7 +63,7 @@ function CodeEditor({
                 language="javascript"
                 value={code}
                 onChange={setCode}
-                options={editorSettings}
+                options={{ ...editorSettings, readOnly }}
               />
             </Box>
           </Paper>
@@ -99,7 +102,9 @@ function CodeEditor({
               <Paper elevation={0} sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
                 <PaneHeader title="Output" icon={<OutputIcon fontSize="small" />} />
                 <Box p={2} flexGrow={1} overflow="auto" sx={{ fontFamily: 'monospace', fontSize: '0.9rem' }}>
-                  <pre style={{ margin: 0 }}>{output}</pre>
+                  {isOutputLoading ? <CircularProgress color="primary" /> : (
+                    <pre style={{ margin: 0 }}>{output || 'Output will be displayed here'}</pre>
+                  )}
                 </Box>
               </Paper>
             </Panel>

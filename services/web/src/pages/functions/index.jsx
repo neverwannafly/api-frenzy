@@ -1,9 +1,12 @@
 import React from 'react';
 import { Route, Routes } from 'react-router-dom';
 
+import withLogin from '@app/hoc/withLogin';
+
 import Home from './home';
 import NewFunction from './new';
 import EditFunction from './edit';
+import ViewFunction from './view';
 
 function Functions() {
   return (
@@ -11,8 +14,9 @@ function Functions() {
       <Route path="/" element={<Home />} />
       <Route path="/new" element={<NewFunction />} />
       <Route path="/:slug/edit" element={<EditFunction />} />
+      <Route path="/:slug/" element={<ViewFunction />} />
     </Routes>
   );
 }
 
-export default Functions;
+export default withLogin(Functions);

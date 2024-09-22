@@ -10,7 +10,7 @@ import {
 } from '@app/constants/auth';
 import { setToast } from '@app/store/toast';
 import { setUser } from '@app/store/user';
-import { setForm } from '@app/store/forms';
+import { unsetForm } from '@app/store/forms';
 
 import AuthForm from './AuthForm';
 
@@ -19,15 +19,16 @@ function SignupForm() {
   const navigate = useNavigate();
 
   const handleSuccess = (response) => {
-    batch(() => {
-      dispatch(setUser(response));
-      navigate('/dashboard');
-      dispatch(setForm({ auth: false }));
-      dispatch(setToast({
-        message: `Welcome ${response.data.attributes.username}!`,
-        type: 'success',
-      }));
-    });
+    dispatch(setUser(response, () => {
+      batch(() => {
+        dispatch(unsetForm({ form: 'auth' }));
+        dispatch(setToast({
+          message: `Welcome ${response.data.attributes.username}!`,
+          type: 'success',
+        }));
+        navigate('/dashboard');
+      });
+    }));
   };
   const {
     handleFieldUpdate,

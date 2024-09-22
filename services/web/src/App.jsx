@@ -11,6 +11,7 @@ import { getAuthToken } from '@app/lib/auth';
 import Header from '@app/components/navbar';
 import Footer from '@app/components/Footer';
 import { loadUser } from '@app/store/user';
+import AuthForm from '@app/components/auth';
 
 import AppRouter from './Router';
 
@@ -29,6 +30,7 @@ function Main() {
       <Header />
       <AppRouter />
       <Footer />
+      <AuthForm />
     </>
   );
 }

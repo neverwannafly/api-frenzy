@@ -12,10 +12,9 @@ class Functions::Filter
 
   def apply
     filters = aggregate_filters
-    puts filters
     filters = [trending_filter(nil)] if filters.empty?
 
-    query = Function.all.limit(@limit).offset(@page)
+    query = Function.all.limit(@limit).offset(@page).select(*selectors)
     filters.each do |filter|
       query = query.where(filter)
     end
@@ -26,13 +25,11 @@ class Functions::Filter
   private
 
   def aggregate_filters
-    puts @filters, @filters.class
     return [] unless @filters.is_a? Array
 
     filters = []
 
     @filters.each do |filter|
-      puts filter, filter.is_a?(Hash)
       next unless filter.is_a? Hash
 
       filter_type = filter.dig(:type)
@@ -63,5 +60,9 @@ class Functions::Filter
 
   def keyword_search_filter(filter_value)
     ["name ILIKE ?", "%#{filter_value}%"]
+  end
+
+  def selectors
+    %i[name description slug visibility status version created_at updated_at user_id runtime_id default_params]
   end
 end

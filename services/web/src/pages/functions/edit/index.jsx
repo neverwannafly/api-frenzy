@@ -4,6 +4,7 @@ import {
   Button,
   Typography,
   Paper,
+  Divider,
 } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
@@ -12,19 +13,20 @@ import { loadFunction } from '@app/store/functions';
 import { update as updateFunction, testCode } from '@app/api/functions';
 import EmptyList from '@app/components/EmptyList';
 import Loader from '@app/components/Loader';
+import CodeEditor from '@app/pages/functions/components/CodeEditor';
 
-import CodeEditor from './codeEditor';
 import Settings from './settings';
 
 function CreateFunction() {
   const [heading, setHeading] = useState('');
   const [code, setCode] = useState('// Your code here');
   const [params, setParams] = useState('{\n    \n}');
-  const [output, setOutput] = useState('Output will be displayed here');
+  const [output, setOutput] = useState(null);
   const [memoryAllocation, setMemoryAllocation] = useState(16);
   const [cpuAllocation, setCpuAllocation] = useState(200);
   const [time, setTime] = useState(500);
   const [environment, setEnvironment] = useState([]);
+  const [outputLoading, setOutputLoading] = useState(false);
   const { slug } = useParams();
 
   const dispatch = useDispatch();
@@ -37,7 +39,11 @@ function CreateFunction() {
   useEffect(() => {
     if (data) {
       const {
-        name: functionName, code: userCode, limits, env_vars: envVars,
+        name: functionName,
+        code: userCode,
+        limits,
+        env_vars: envVars,
+        default_params: defaultParams,
       } = data.data.attributes;
       const { name: runtimeName, placeholder } = data.included[0].attributes;
       const { cpu, memory, timeout } = limits || {};
@@ -49,27 +55,38 @@ function CreateFunction() {
       if (memory) setMemoryAllocation(memory / (1024 * 1024));
       if (timeout) setTime(timeout);
       if (envVars) setEnvironment(envVars);
+      if (defaultParams) setParams(JSON.stringify(defaultParams, null, 4));
     }
   }, [data]);
 
   const handleSaveCode = async () => {
-    const response = await updateFunction(slug, {
+    const jsonParams = (() => { try { return JSON.parse(params); } catch (e) { return {}; } })();
+    await updateFunction(slug, {
       code,
       env_vars: environment,
       limits: { cpu: cpuAllocation, memory: memoryAllocation, timeout: time },
+      default_params: jsonParams,
     });
-    console.log(response);
   };
 
   const handleTestCode = async () => {
+    setOutputLoading(true);
     const response = await testCode(slug, {
       params: (() => { try { return JSON.parse(params); } catch (e) { return {}; } })(),
     });
     setOutput(JSON.stringify(response, null, 2));
+    setOutputLoading(false);
   };
 
-  const handleSaveFunction = () => {
-    // Implement save function logic
+  const handleSaveFunction = async () => {
+    const jsonParams = (() => { try { return JSON.parse(params); } catch (e) { return {}; } })();
+    await updateFunction(slug, {
+      code,
+      env_vars: environment,
+      limits: { cpu: cpuAllocation, memory: memoryAllocation, timeout: time },
+      default_params: jsonParams,
+      publish: true,
+    });
   };
 
   if (error) {
@@ -87,11 +104,13 @@ function CreateFunction() {
           {heading}
         </Typography>
 
+        <Divider />
+
         <Box sx={{ my: 2 }}>
           <Button variant="contained" color="primary" onClick={handleSaveCode} sx={{ mr: 1 }}>
             Save Code
           </Button>
-          <Button variant="contained" color="secondary" onClick={handleTestCode}>
+          <Button variant="outlined" color="primary" onClick={handleTestCode}>
             Test Code
           </Button>
         </Box>
@@ -102,6 +121,7 @@ function CreateFunction() {
           params={params}
           setParams={setParams}
           output={output}
+          isOutputLoading={outputLoading}
         />
 
         <Typography variant="h6" gutterBottom sx={{ mt: 4 }}>
