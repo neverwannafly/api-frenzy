@@ -49,7 +49,9 @@ RUN npm install -g \
   bluebird \
   rimraf \
   morgan \
-  compression
+  compression \
+  chess.js \
+  @anthropic-ai/bedrock-sdk
 
 ENV NODE_ENV=production
 ENV PATH="/node_modules/.bin:$PATH"
