@@ -10,7 +10,7 @@ class FunctionsController < ApplicationController
   end
 
   def show
-    render json: FunctionSerializer.new(@function, include: %i[runtime])
+    render json: FunctionSerializer.new(@function, include: %i[runtime], params: { current_user_id: current_user.id })
   end
 
   def create
