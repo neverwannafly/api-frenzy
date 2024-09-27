@@ -101,7 +101,7 @@ async function runContainer(image, {
     const exitCode = containerInfo.State.ExitCode;
 
     if (exitCode in ERROR_MESSAGES) {
-      stderr ||= ERROR_MESSAGES[exitCode];
+      stderr = `${ERROR_MESSAGES[exitCode]}\n${stderr}`;
     } else if (exitCode !== 0) {
       stderr ||= 'Internal Server Error';
     }

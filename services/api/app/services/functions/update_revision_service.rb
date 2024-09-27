@@ -3,7 +3,7 @@ class Functions::UpdateRevisionService < ::BaseService
   MAX_MEMORY_LIMIT = 512.megabytes
   MAX_CPU_LIMIT = 2000
   MAX_TIMEOUT = 5000
-  MAX_ENV_VARS = 5
+  MAX_ENV_VARS = 20
 
   def initialize(function:, publish: false, updation_params: {})
     @function = function

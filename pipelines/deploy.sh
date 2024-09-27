@@ -12,11 +12,12 @@ docker push 010928219493.dkr.ecr.ap-south-1.amazonaws.com/af.functions:v1
 # Push Runtimes
 aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/f2o5a2c3
 docker push public.ecr.aws/f2o5a2c3/af.runtime.node18:v1
+docker push public.ecr.aws/f2o5a2c3/af.runtime.vscode-alpine:v1
 
 ## Run Data Migrations ##
 TASK_ARN=$(aws ecs run-task \
   --cluster api-frenzy-prod \
-  --task-definition af-api:5 \
+  --task-definition af-api:6 \
   --overrides '{"containerOverrides":[{"name":"'"api"'","command":["'"migration"'"]}]}' \
   --launch-type EC2 \
   --query 'tasks[0].taskArn' \

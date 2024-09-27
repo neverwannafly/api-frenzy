@@ -1,6 +1,7 @@
 const vm = require('vm');
 const path = require('path');
 const { readFileSync } = require('fs');
+const { pathToFileURL } = require('url');
 
 const userCode = decodeURIComponent(process.env.USER_CODE);
 const userParams = JSON.parse(decodeURIComponent(process.env.USER_PARAMS));
@@ -10,17 +11,21 @@ const logs = [];
 const originalConsoleLog = console.log;
 console.log = (...args) => { logs.push(args.join(' ')) };
 
-// Create a custom require function that resolves modules from the specified path
+// Create a custom require function that handles both built-in and external modules
 function createCustomRequire() {
   const basePath = path.resolve('/usr/local/lib/node_modules');
-  return async function(moduleName) {
+  const builtinModules = ['https', 'http', 'util', 'fs', 'path', 'crypto', 'os', 'stream', 'events'];
+  return function customRequire(moduleName) {
     try {
+      if (builtinModules.includes(moduleName)) {
+        return require(moduleName);
+      }
+
       const modulePath = require.resolve(moduleName, { paths: [basePath] });
       const moduleText = readFileSync(modulePath, 'utf-8');
 
       if (moduleText.includes('export ')) {
-        const module = await import(pathToFileURL(modulePath));
-        return module.default || module;
+        return import(pathToFileURL(modulePath)).then(module => module.default || module);
       } else {
         return require(modulePath);
       }
@@ -30,20 +35,16 @@ function createCustomRequire() {
   };
 }
 
-const cloneGlobal = () => Object.defineProperties(
-  {...global},
-  Object.getOwnPropertyDescriptors(global)
-)
-
-const script = new vm.Script(userCode);
 const sandbox = {
   module: {},
-  ...cloneGlobal(),
-  console,
   require: createCustomRequire(),
+  console,
   process,
-  Buffer
+  Buffer,
+  ...global,
 };
+
+const script = new vm.Script(userCode);
 
 const runExecution = async() => {
   const startTime = process.hrtime();
